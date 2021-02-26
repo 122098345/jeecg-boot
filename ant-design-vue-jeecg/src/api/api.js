@@ -23,17 +23,15 @@ const changePassword = (params)=>putAction("/sys/user/changePassword",params);
 const addPermission= (params)=>postAction("/sys/permission/add",params);
 const editPermission= (params)=>putAction("/sys/permission/edit",params);
 const getPermissionList = (params)=>getAction("/sys/permission/list",params);
-/*update_begin author:wuxianquan date:20190908 for:添加查询一级菜单和子菜单查询api */
 const getSystemMenuList = (params)=>getAction("/sys/permission/getSystemMenuList",params);
 const getSystemSubmenu = (params)=>getAction("/sys/permission/getSystemSubmenu",params);
 const getSystemSubmenuBatch = (params) => getAction('/sys/permission/getSystemSubmenuBatch', params)
-
 const queryTreeList = (params)=>getAction("/sys/permission/queryTreeList",params);
 const queryTreeListForRole = (params)=>getAction("/sys/role/queryTreeList",params);
 const queryListAsync = (params)=>getAction("/sys/permission/queryListAsync",params);
 const queryRolePermission = (params)=>getAction("/sys/permission/queryRolePermission",params);
 const saveRolePermission = (params)=>postAction("/sys/permission/saveRolePermission",params);
-const queryPermissionsByUser = (params)=>getAction("/sys/permission/getUserPermissionByToken",params);
+const queryPermissionsByUser = ()=>getAction("/sys/permission/getUserPermissionByToken");
 const loadAllRoleIds = (params)=>getAction("/sys/permission/loadAllRoleIds",params);
 const getPermissionRuleList = (params)=>getAction("/sys/permission/getPermRuleListByPermId",params);
 const queryPermissionRule = (params)=>getAction("/sys/permission/queryPermissionRule",params);

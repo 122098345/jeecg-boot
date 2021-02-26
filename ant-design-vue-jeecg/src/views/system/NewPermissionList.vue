@@ -53,7 +53,7 @@
               </a-menu-item>
 
               <a-menu-item>
-                <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
+                <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)" placement="topLeft">
                   <a>删除</a>
                 </a-popconfirm>
               </a-menu-item>
@@ -192,12 +192,14 @@
             if (res.success) {
               let childrenMap = res.result
               let fn = (list) => {
-                list.forEach(data => {
-                  if (this.expandedRowKeys.includes(data.id)) {
-                    data.children = childrenMap[data.id]
-                    fn(data.children)
-                  }
-                })
+                if(list&&list.length>0){
+                  list.forEach(data => {
+                    if (this.expandedRowKeys.includes(data.id)) {
+                      data.children = childrenMap[data.id]
+                      fn(data.children)
+                    }
+                  })
+                } 
               }
               fn(dataList)
             }

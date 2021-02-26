@@ -174,7 +174,10 @@ function hasColoum(item,authList){
 
 //权限无效时不做控制，有效时控制，只能控制 显示不显示
 //根据授权码前缀获取未授权的列信息
-function getNoAuthCols(pre){
+export function getNoAuthCols(pre){
+  if(!pre || pre.length==0){
+    return []
+  }
   let permissionList = [];
   let allPermissionList = [];
 
@@ -201,6 +204,37 @@ function getNoAuthCols(pre){
     return true;
   })
   return cols;
+}
+
+/**
+ * 将Online的行编辑按钮权限，添加至本地存储
+ */
+export function addOnlineBtAuth2Storage(pre, authList){
+  let allAuthList = JSON.parse(sessionStorage.getItem(SYS_BUTTON_AUTH) || "[]");
+  let newAuthList = allAuthList.filter(item=>{
+    if(!item.action){
+      return true
+    }
+    return item.action.indexOf(pre)<0
+  })
+  if(authList && authList.length>0){
+    for(let item of authList){
+      newAuthList.push({
+        action: pre+item,
+        type:1,
+        status:1
+      })
+    }
+    let temp = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
+    let newArr = temp.filter(item=>{
+      if(!item.action){
+        return true
+      }
+      return item.action.indexOf(pre)<0 || authList.indexOf(item.action.replace(pre, ''))<0
+    })
+    sessionStorage.setItem(USER_AUTH, JSON.stringify(newArr))
+  }
+  sessionStorage.setItem(SYS_BUTTON_AUTH, JSON.stringify(newAuthList))
 }
 
 

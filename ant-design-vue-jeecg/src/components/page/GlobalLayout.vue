@@ -13,6 +13,7 @@
       >
         <side-menu
           mode="inline"
+          v-if="device === 'mobile'"
           :menus="menus"
           @menuSelect="menuSelect"
           :theme="navTheme"
@@ -21,7 +22,7 @@
       </a-drawer>
 
       <side-menu
-        v-else
+        v-show="device === 'desktop'"
         mode="inline"
         :menus="menus"
         @menuSelect="myMenuSelect"
@@ -130,6 +131,11 @@
       //--update-begin----author:scott---date:20190320------for:根据后台菜单配置，判断是否路由菜单字段，动态选择是否生成路由（为了支持参数URL菜单）------
       //this.menus = this.mainRouters.find((item) => item.path === '/').children;
       this.menus = this.permissionMenuList
+      
+      //--update-begin----author:liusq---date:20210223------for:关于测边菜单遮挡内容问题详细说明 #2255
+      this.collapsed=!this.sidebarOpened;
+      //--update-begin----author:liusq---date:20210223------for:关于测边菜单遮挡内容问题详细说明 #2255
+  
       // 根据后台配置菜单，重新排序加载路由信息
       //console.log('----加载菜单逻辑----')
       //console.log(this.mainRouters)
@@ -343,7 +349,7 @@
           }
 
           .anticon {
-            color: white;
+            color: inherit;
           }
         }
       }
@@ -359,7 +365,7 @@
             }
 
             .anticon {
-              color: black;
+              color: inherit;
             }
           }
         }

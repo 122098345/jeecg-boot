@@ -4,6 +4,7 @@
     :visible="visible"
     :title="title"
     switchFullscreen
+    wrapClassName="j-user-select-modal"
     @ok="handleSubmit"
     @cancel="close"
     style="top:50px"
@@ -100,7 +101,7 @@
           {
             title: '部门',
             align: 'center',
-            dataIndex: 'orgCode'
+            dataIndex: 'orgCodeTxt'
           }
         ],
         scrollTrigger: {},

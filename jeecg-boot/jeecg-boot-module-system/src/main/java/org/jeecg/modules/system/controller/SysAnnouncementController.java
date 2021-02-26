@@ -96,10 +96,6 @@ public class SysAnnouncementController {
 			}
 		}
 		IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
-		log.info("查询当前页："+pageList.getCurrent());
-		log.info("查询当前页数量："+pageList.getSize());
-		log.info("查询结果数量："+pageList.getRecords().size());
-		log.info("数据总数："+pageList.getTotal());
 		result.setSuccess(true);
 		result.setResult(pageList);
 		return result;
@@ -233,7 +229,7 @@ public class SysAnnouncementController {
 			    	obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_TOPIC);
 					obj.put(WebsocketConst.MSG_ID, sysAnnouncement.getId());
 					obj.put(WebsocketConst.MSG_TXT, sysAnnouncement.getTitile());
-			    	webSocket.sendAllMessage(obj.toJSONString());
+			    	webSocket.sendMessage(obj.toJSONString());
 				}else {
 					// 2.插入用户通告阅读标记表记录
 					String userId = sysAnnouncement.getUserIds();
@@ -244,7 +240,7 @@ public class SysAnnouncementController {
 			    	obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
 					obj.put(WebsocketConst.MSG_ID, sysAnnouncement.getId());
 					obj.put(WebsocketConst.MSG_TXT, sysAnnouncement.getTitile());
-			    	webSocket.sendMoreMessage(userIds, obj.toJSONString());
+			    	webSocket.sendMessage(userIds, obj.toJSONString());
 				}
 			}
 		}
@@ -285,23 +281,31 @@ public class SysAnnouncementController {
 		LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
 		String userId = sysUser.getId();
 		// 1.将系统消息补充到用户通告阅读标记表中
-		Collection<String> anntIds = sysAnnouncementSendService.queryByUserId(userId);
 		LambdaQueryWrapper<SysAnnouncement> querySaWrapper = new LambdaQueryWrapper<SysAnnouncement>();
 		querySaWrapper.eq(SysAnnouncement::getMsgType,CommonConstant.MSG_TYPE_ALL); // 全部人员
 		querySaWrapper.eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0.toString());  // 未删除
 		querySaWrapper.eq(SysAnnouncement::getSendStatus, CommonConstant.HAS_SEND); //已发布
 		querySaWrapper.ge(SysAnnouncement::getEndTime, sysUser.getCreateTime()); //新注册用户不看结束通知
-		if(anntIds!=null&&anntIds.size()>0) {
-			querySaWrapper.notIn(SysAnnouncement::getId, anntIds);
-		}
+		//update-begin--Author:liusq  Date:20210108 for：[JT-424] 【开源issue】bug处理--------------------
+		querySaWrapper.notInSql(SysAnnouncement::getId,"select annt_id from sys_announcement_send where user_id='"+userId+"'");
+		//update-begin--Author:liusq  Date:20210108  for： [JT-424] 【开源issue】bug处理--------------------
 		List<SysAnnouncement> announcements = sysAnnouncementService.list(querySaWrapper);
 		if(announcements.size()>0) {
 			for(int i=0;i<announcements.size();i++) {
+				//update-begin--Author:wangshuai  Date:20200803  for： 通知公告消息重复LOWCOD-759--------------------
+				//因为websocket没有判断是否存在这个用户，要是判断会出现问题，故在此判断逻辑
+				LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<>();
+				query.eq(SysAnnouncementSend::getAnntId,announcements.get(i).getId());
+				query.eq(SysAnnouncementSend::getUserId,userId);
+				SysAnnouncementSend one = sysAnnouncementSendService.getOne(query);
+				if(null==one){
 				SysAnnouncementSend announcementSend = new SysAnnouncementSend();
 				announcementSend.setAnntId(announcements.get(i).getId());
 				announcementSend.setUserId(userId);
 				announcementSend.setReadFlag(CommonConstant.NO_READ_FLAG);
 				sysAnnouncementSendService.save(announcementSend);
+				}
+				//update-end--Author:wangshuai  Date:20200803  for： 通知公告消息重复LOWCOD-759------------
 			}
 		}
 		// 2.查询用户未读的系统消息
@@ -328,9 +332,10 @@ public class SysAnnouncementController {
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(SysAnnouncement sysAnnouncement,HttpServletRequest request) {
         // Step.1 组装查询条件
-        QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, request.getParameterMap());
+        LambdaQueryWrapper<SysAnnouncement> queryWrapper = new LambdaQueryWrapper<SysAnnouncement>(sysAnnouncement);
         //Step.2 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		queryWrapper.eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0);
         List<SysAnnouncement> pageList = sysAnnouncementService.list(queryWrapper);
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "系统通告列表");
@@ -398,7 +403,7 @@ public class SysAnnouncementController {
 					obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_TOPIC);
 					obj.put(WebsocketConst.MSG_ID, sysAnnouncement.getId());
 					obj.put(WebsocketConst.MSG_TXT, sysAnnouncement.getTitile());
-					webSocket.sendAllMessage(obj.toJSONString());
+					webSocket.sendMessage(obj.toJSONString());
 				}else {
 					// 2.插入用户通告阅读标记表记录
 					String userId = sysAnnouncement.getUserIds();
@@ -407,14 +412,14 @@ public class SysAnnouncementController {
 						obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
 						obj.put(WebsocketConst.MSG_ID, sysAnnouncement.getId());
 						obj.put(WebsocketConst.MSG_TXT, sysAnnouncement.getTitile());
-						webSocket.sendMoreMessage(userIds, obj.toJSONString());
+						webSocket.sendMessage(userIds, obj.toJSONString());
 					}
 				}
 			}
 		}else{
 			obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_TOPIC);
 			obj.put(WebsocketConst.MSG_TXT, "批量设置已读");
-			webSocket.sendAllMessage(obj.toJSONString());
+			webSocket.sendMessage(obj.toJSONString());
 		}
 		return result;
 	}

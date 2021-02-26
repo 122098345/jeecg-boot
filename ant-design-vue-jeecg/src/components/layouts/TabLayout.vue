@@ -14,19 +14,19 @@
       @change="changePage"
       @tabClick="tabCallBack"
       @edit="editPage">
-      <a-tab-pane :id="page.fullPath" :key="page.fullPath" v-for="page in pageList">
+      <a-tab-pane :id="page.fullPath" :key="page.fullPath" v-for="page in pageList" :closable="!(page.meta.title=='首页')">
         <span slot="tab" :pagekey="page.fullPath">{{ page.meta.title }}</span>
       </a-tab-pane>
     </a-tabs>
     <div style="margin: 12px 12px 0;">
-      <transition name="page-toggle">
-        <keep-alive v-if="multipage">
-          <router-view v-if="reloadFlag"/>
-        </keep-alive>
-        <template v-else>
-          <router-view v-if="reloadFlag"/>
-        </template>
-      </transition>
+      <!-- update-begin-author:taoyan date:20201221 for:此处删掉transition标签 不知道为什么加上后 页面路由切换的时候即1及菜单切到2及菜单的时候 两个菜单页面会同时出现300-500秒左右 -->
+      <keep-alive v-if="multipage">
+        <router-view v-if="reloadFlag"/>
+      </keep-alive>
+      <template v-else>
+        <router-view v-if="reloadFlag"/>
+      </template>
+      <!-- update-end-author:taoyan date:20201221 for:此处删掉transition标签 不知道为什么加上后 页面路由切换的时候即1及菜单切到2及菜单的时候 两个菜单页面会同时出现300-500秒左右 -->
     </div>
   </global-layout>
 </template>
@@ -36,8 +36,9 @@
   import Contextmenu from '@/components/menu/Contextmenu'
   import { mixin, mixinDevice } from '@/utils/mixin.js'
   import { triggerWindowResizeEvent } from '@/utils/util'
-
   const indexKey = '/dashboard/analysis'
+  import Vue from 'vue'
+  import { CACHE_INCLUDED_ROUTES } from "@/store/mutation-types"
 
   export default {
     name: 'TabLayout',
@@ -115,11 +116,11 @@
         }else if (this.linkList.indexOf(newRoute.fullPath) < 0) {
           this.linkList.push(newRoute.fullPath)
           this.pageList.push(Object.assign({},newRoute))
-          // update-begin-author:sunjianlei date:20200103 for: 如果新增的页面配置了缓存路由，那么就强制刷新一遍
-          if (newRoute.meta.keepAlive) {
-            this.routeReload()
-          }
-          // update-end-author:sunjianlei date:20200103 for: 如果新增的页面配置了缓存路由，那么就强制刷新一遍
+          //// update-begin-author:sunjianlei date:20200103 for: 如果新增的页面配置了缓存路由，那么就强制刷新一遍 #842
+          // if (newRoute.meta.keepAlive) {
+          //   this.routeReload()
+          // }
+          //// update-end-author:sunjianlei date:20200103 for: 如果新增的页面配置了缓存路由，那么就强制刷新一遍 #842
         } else if (this.linkList.indexOf(newRoute.fullPath) >= 0) {
           let oldIndex = this.linkList.indexOf(newRoute.fullPath)
           let oldPositionRoute = this.pageList[oldIndex]
@@ -132,8 +133,8 @@
         // 【TESTA-523】修复：不允许重复跳转路由异常
         if (waitRouter.fullPath !== this.$route.fullPath) {
           this.$router.push(Object.assign({}, waitRouter))
-          this.changeTitle(waitRouter.meta.title)
         }
+        this.changeTitle(waitRouter.meta.title)
       },
       'multipage': function(newVal) {
         if(this.reloadFlag){
@@ -185,7 +186,12 @@
       },
       tabCallBack() {
         this.$nextTick(() => {
-          triggerWindowResizeEvent()
+          //update-begin-author:taoyan date: 20201211 for:【新版】online报错 JT-100
+         setTimeout(()=>{
+           //省市区组件里面给window绑定了个resize事件 导致切换页面的时候触发了他的resize，但是切换页面，省市区组件还没被销毁前就触发了该事件，导致控制台报错，加个延迟
+           triggerWindowResizeEvent()
+         },20)
+          //update-end-author:taoyan date: 20201211 for:【新版】online报错 JT-100
         })
       },
       editPage(key, action) {
@@ -201,11 +207,27 @@
           return
         }
         console.log("this.pageList ",this.pageList );
+        let removeRoute = this.pageList.filter(item => item.fullPath == key)
         this.pageList = this.pageList.filter(item => item.fullPath !== key)
         let index = this.linkList.indexOf(key)
         this.linkList = this.linkList.filter(item => item !== key)
         index = index >= this.linkList.length ? this.linkList.length - 1 : index
         this.activePage = this.linkList[index]
+
+        //update-begin--Author:scott  Date:20201015 for：路由缓存问题，关闭了tab页时再打开就不刷新 #842
+        //关闭页面则从缓存cache_included_routes中删除路由，下次点击菜单会重新加载页面
+        let cacheRouterArray = Vue.ls.get(CACHE_INCLUDED_ROUTES) || []
+        if (removeRoute && removeRoute[0]) {
+          let componentName = removeRoute[0].meta.componentName
+          console.log("key: ", key);
+          console.log("componentName: ", componentName);
+          if(cacheRouterArray.includes(componentName)){
+            cacheRouterArray.splice(cacheRouterArray.findIndex(item => item === componentName), 1)
+            Vue.ls.set(CACHE_INCLUDED_ROUTES, cacheRouterArray)
+          }
+        }
+        //update-end--Author:scott  Date:20201015 for：路由缓存问题，关闭了tab页时再打开就不刷新 #842
+
       },
       onContextmenu(e) {
         const pagekey = this.getPageKey(e.target)
@@ -308,8 +330,12 @@
           this.$store.dispatch(ToggleMultipage,true)
           this.reloadFlag = true
         })
-      }
+      },
       //update-end-author:taoyan date:20191008 for:路由刷新
+      //新增一个返回方法
+      excuteCallback(callback){
+        callback()
+      },
     }
   }
 </script>

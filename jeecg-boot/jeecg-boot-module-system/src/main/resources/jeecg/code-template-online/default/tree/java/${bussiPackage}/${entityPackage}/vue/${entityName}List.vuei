@@ -15,22 +15,10 @@
       <a-form layout="inline" @keyup.enter.native="searchQuery">
         <a-row :gutter="24">
     <#assign query_field_no=0>
-    <#assign query_field_select=false>
-    <#assign query_field_date=false>
+    <#assign query_flag=false>
     <#assign list_need_dict=false>
     <#assign list_need_category=false>
-    <#assign query_field_pca=false>
     <#assign list_need_pca=false>
-    <#assign query_flag=false>
-    <#assign query_inp=false>
-    <#assign query_popup=false>
-    <#assign query_sel_user=false>
-    <#assign query_sel_dep=false>
-    <#assign query_sel_multi=false>
-    <#assign query_sel_cat=false>
-    <#assign query_sel_search=false>
-    <#assign query_switch=false>
-    <#assign list_need_switch=false>
     <#assign bpm_flag=false>
 
     <#-- 开始循环 -->
@@ -53,36 +41,26 @@
           <#if query_field_no gt 1>  </#if><a-col :xl="6" :lg="7" :md="8" :sm="24">
             <#if query_field_no gt 1>  </#if><a-form-item label="${po.filedComment}">
             <#if po.classType=='sel_search'>
-<#assign query_sel_search=true>
               <#if query_field_no gt 1>  </#if><j-search-select-tag placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}" dict="${po.dictTable},${po.dictText},${po.dictField}"/>
             <#elseif po.classType=='sel_user'>
-<#assign query_sel_user=true>
               <#if query_field_no gt 1>  </#if><j-select-user-by-dep placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}"/>
             <#elseif po.classType=='switch'>
-<#assign query_switch=true>
               <#if query_field_no gt 1>  </#if><j-switch placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}" <#if po.dictField?default("")?trim?length gt 1>:options="${po.dictField}"</#if> query></j-switch>
             <#elseif po.classType=='sel_depart'>
-<#assign query_sel_dep=true>
               <#if query_field_no gt 1>  </#if><j-select-depart placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}"/>
             <#elseif po.classType=='list_multi'>
-<#assign query_sel_multi=true>
               <#if query_field_no gt 1>  </#if><j-multi-select-tag placeholder="请选择${po.filedComment}" dictCode="${query_field_dictCode?default("")}" v-model="queryParam.${po.fieldName}"/>
             <#elseif po.classType=='cat_tree'>
-<#assign query_sel_cat=true>
               <#if query_field_no gt 1>  </#if><j-category-select placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}" pcode="${po.dictField?default("")}"/>
             <#elseif po.classType=='date'>
-<#assign query_field_date=true>
               <#if query_field_no gt 1>  </#if><j-date placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}"></j-date>
             <#elseif po.classType=='datetime'>
-<#assign query_field_date=true>
               <#if query_field_no gt 1>  </#if><j-date :show-time="true" date-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}"></j-date>
             <#elseif po.classType=='pca'>
-<#assign query_field_pca=true>
               <#if query_field_no gt 1>  </#if><j-area-linkage type="cascader" v-model="queryParam.${po.fieldName}" placeholder="请选择省市区"/>
             <#elseif po.classType=='popup'>
               <#if query_field_no gt 1>  </#if><j-popup placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}" code="${po.dictTable}" org-fields="${po.dictField}" dest-fields="${po.dictText}" :field="getPopupField('${po.dictText}')"/>
             <#elseif po.classType=='list' || po.classType=='radio' || po.classType=='checkbox'>
-<#assign query_field_select=true>
             <#--  ---------------------------下拉或是单选 判断数据字典是表字典还是普通字典------------------------------- -->
             <#if po.dictTable?default("")?trim?length gt 1>
               <#if query_field_no gt 1>  </#if><j-dict-select-tag placeholder="请选择${po.filedComment}" v-model="queryParam.${po.fieldName}" dictCode="${po.dictTable},${po.dictText},${po.dictField}"/>
@@ -100,12 +78,10 @@
           <#if query_field_no gt 1>  </#if><a-col :xl="10" :lg="11" :md="12" :sm="24">
             <#if query_field_no gt 1>  </#if><a-form-item label="${po.filedComment}">
             <#if po.classType=='date'>
-<#assign query_field_date=true>
               <#if query_field_no gt 1>  </#if><j-date placeholder="请选择开始日期" class="query-group-cust" v-model="queryParam.${po.fieldName}_begin"></j-date>
               <#if query_field_no gt 1>  </#if><span class="query-group-split-cust"></span>
               <#if query_field_no gt 1>  </#if><j-date placeholder="请选择结束日期" class="query-group-cust" v-model="queryParam.${po.fieldName}_end"></j-date>
             <#elseif po.classType=='datetime'>
-<#assign query_field_date=true>
               <#if query_field_no gt 1>  </#if><j-date :show-time="true" date-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择开始时间" class="query-group-cust" v-model="queryParam.${po.fieldName}_begin"></j-date>
               <#if query_field_no gt 1>  </#if><span class="query-group-split-cust"></span>
               <#if query_field_no gt 1>  </#if><j-date :show-time="true" date-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择结束时间" class="query-group-cust" v-model="queryParam.${po.fieldName}_end"></j-date>
@@ -127,9 +103,6 @@
     </#if>
     <#if po.classType=='pca'>
     <#assign list_need_pca=true>
-    </#if>
-    <#if po.classType=='switch'>
-    <#assign list_need_switch=true>
     </#if>
     </#list>
     <#-- 结束循环 -->
@@ -161,6 +134,8 @@
       <a-upload name="file" :showUploadList="false" :multiple="false" :headers="tokenHeader" :action="importExcelUrl" @change="handleImportExcel">
         <a-button type="primary" icon="import">导入</a-button>
       </a-upload>
+      <!-- 高级查询区域 -->
+      <j-super-query :fieldList="superFieldList" ref="superQueryModal" @handleSuperQuery="handleSuperQuery"></j-super-query>
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
           <a-menu-item key="1" @click="batchDel"><a-icon type="delete"/>删除</a-menu-item>
@@ -180,6 +155,8 @@
         ref="table"
         size="middle"
         rowKey="id"
+        class="j-table-force-nowrap"
+        :scroll="{x:true}"
         :columns="columns"
         :dataSource="dataSource"
         :pagination="ipagination"
@@ -217,7 +194,7 @@
                 <a @click="handleAddChild(record)">添加下级</a>
               </a-menu-item>
               <a-menu-item>
-                <a-popconfirm title="确定删除吗?" @confirm="() => handleDeleteNode(record)">
+                <a-popconfirm title="确定删除吗?" @confirm="() => handleDeleteNode(record.id)" placement="topLeft">
                   <a>删除</a>
                 </a-popconfirm>
               </a-menu-item>
@@ -239,77 +216,17 @@
   import ${entityName}Modal from './modules/${entityName}Modal'
   import {filterMultiDictText} from '@/components/dict/JDictSelectUtil'
   import { filterObj } from '@/utils/util';
-  <#if query_field_select>
-  import JDictSelectTag from '@/components/dict/JDictSelectTag.vue'
-  </#if>
-  <#if query_field_date>
-  import JDate from '@/components/jeecg/JDate.vue'
-  </#if>
   <#if list_need_category>
   import { loadCategoryData } from '@/api/api'
   </#if>
-  <#if query_field_pca>
-  import JAreaLinkage from '@comp/jeecg/JAreaLinkage'
-  </#if>
   <#if list_need_pca>
   import Area from '@/components/_util/Area'
-  </#if>
-  <#if query_inp>
-  import JInput from '@comp/jeecg/JInput'
-  </#if>
-  <#if query_sel_user>
-  import JSelectUserByDep from '@/components/jeecgbiz/JSelectUserByDep'
-  </#if>
-  <#if query_sel_dep>
-  import JSelectDepart from '@/components/jeecgbiz/JSelectDepart'
-  </#if>
-  <#if query_sel_multi>
-  import JMultiSelectTag from '@/components/dict/JMultiSelectTag'
-  </#if>
-  <#if query_sel_cat>
-  import JCategorySelect from '@comp/jeecg/JCategorySelect'
-  </#if>
-  <#if query_sel_search>
-  import JSearchSelectTag from '@/components/dict/JSearchSelectTag'
-  </#if>
-  <#if query_switch>
-  import JSwitch from '@/components/jeecg/JSwitch'
   </#if>
 
   export default {
     name: "${entityName}List",
     mixins:[JeecgListMixin],
     components: {
-      <#if query_field_select>
-      JDictSelectTag,
-      </#if>
-      <#if query_field_date>
-      JDate,
-      </#if>
-      <#if query_field_pca>
-      JAreaLinkage,
-      </#if>
-      <#if query_inp>
-      JInput,
-      </#if>
-      <#if query_sel_user>
-      JSelectUserByDep,
-      </#if>
-      <#if query_sel_dep>
-      JSelectDepart,
-      </#if>
-      <#if query_sel_multi>
-      JMultiSelectTag,
-      </#if>
-      <#if query_sel_cat>
-      JCategorySelect,
-      </#if>
-      <#if query_sel_search>
-      JSearchSelectTag,
-      </#if>
-      <#if query_switch>
-      JSwitch,
-      </#if>
       ${entityName}Modal
     },
     data () {
@@ -332,6 +249,9 @@
           {
             title:'${po.filedComment}',
             align:"left",
+            <#if po.sort=='Y'>
+            sorter: true,
+            </#if>
             <#if po.classType=='date'>
             dataIndex: '${po.fieldName}',
             customRender:function (text) {
@@ -340,11 +260,20 @@
             <#elseif po.classType=='file'>
             dataIndex: '${po.fieldName}',
             scopedSlots: {customRender: 'fileSlot'}
+            <#elseif po.fieldDbType=='Blob'>
+            dataIndex: '${po.fieldName}String'
             <#elseif po.classType=='image'>
             dataIndex: '${po.fieldName}',
             scopedSlots: {customRender: 'imgSlot'}
             <#elseif po.classType=='list' || po.classType=='list_multi' || po.classType=='sel_search' || po.classType=='radio' || po.classType=='checkbox' || po.classType=='sel_depart' || po.classType=='sel_user'>
             dataIndex: '${po.fieldName}_dictText'
+            <#elseif po.classType=='switch'>
+            dataIndex: '${po.fieldName}',
+            <#if po.dictField?default("")?trim?length gt 1>
+            customRender: (text) => (!text ? "" : (text == ${po.dictField}[0] ? "是" : "否"))
+            <#else>
+            customRender: (text) => (!text ? "" : (text == "Y" ? "是" : "否"))
+            </#if>
 			<#else>
             dataIndex: '${po.fieldName}'
 			</#if>
@@ -356,6 +285,7 @@
             title: '操作',
             dataIndex: 'action',
             align:"center",
+            width:147,
             scopedSlots: { customRender: 'action' },
           }
         ],
@@ -372,8 +302,12 @@
         hasChildrenField:"${hasChildrenField}",
         pidField:"${pidFieldName}",
         dictOptions: {},
-        loadParent: false
+        loadParent: false,
+        superFieldList:[],
       }
+    },
+    created() {
+      this.getSuperFieldList();
     },
     computed: {
       importExcelUrl(){
@@ -397,6 +331,7 @@
         }
         this.loading = true
         let params = this.getQueryParams()
+        params.hasQuery = 'true'
         getAction(this.url.list,params).then(res=>{
           if(res.success){
             let result = res.result
@@ -424,7 +359,7 @@
               let records = res.result.records
               const listMap = new Map();
               for (let item of records) {
-                let pid = item.pid;
+                let pid = item[this.pidField];
                 if (this.expandedRowKeys.join(',').includes(pid)) {
                  let mapList = listMap.get(pid);
                   if (mapList == null) {
@@ -436,12 +371,14 @@
               }
               let childrenMap = listMap;
               let fn = (list) => {
-                list.forEach(data => {
-                  if (this.expandedRowKeys.includes(data.id)) {
-                    data.children = this.getDataByResult(childrenMap.get(data.id))
-                    fn(data.children)
-                  }
-                })
+                if(list) {
+                  list.forEach(data => {
+                    if (this.expandedRowKeys.includes(data.id)) {
+                      data.children = this.getDataByResult(childrenMap.get(data.id))
+                      fn(data.children)
+                    }
+                  })
+                }
               }
               fn(dataList)
             }
@@ -462,6 +399,11 @@
           param = Object.assign(sqp, this.isorter ,this.filters);
         }else{
           param = Object.assign(sqp, this.queryParam, this.isorter ,this.filters);
+        }
+        if(JSON.stringify(this.queryParam) === "{}" || arg){
+          param.hasQuery = 'false'
+        }else{
+          param.hasQuery = 'true'
         }
         param.field = this.getQueryField();
         param.pageNo = this.ipagination.current;
@@ -491,8 +433,10 @@
         if (expanded) {
           this.expandedRowKeys.push(record.id)
           if (record.children.length>0 && record.children[0].isLoading === true) {
-            let params = this.getQueryParams();//查询条件
+            let params = this.getQueryParams(1);//查询条件
             params[this.pidField] = record.id
+            params.hasQuery = 'false'
+            params.superQueryParams=""
             getAction(this.url.childList,params).then((res)=>{
               if(res.success){
                 if(res.result.records){
@@ -520,21 +464,48 @@
         obj[this.pidField] = record['id']
         this.$refs.modalForm.add(obj);
       },
-      handleDeleteNode(record) {
+      handleDeleteNode(id) {
         if(!this.url.delete){
           this.$message.error("请设置url.delete属性!")
           return
         }
         var that = this;
-        deleteAction(that.url.delete, {id: record.id}).then((res) => {
+        deleteAction(that.url.delete, {id: id}).then((res) => {
           if (res.success) {
              that.loadData(1)
           } else {
             that.$message.warning(res.message);
           }
         });
+      },
+      batchDel(){
+        if(this.selectedRowKeys.length<=0){
+          this.$message.warning('请选择一条记录！');
+          return false;
+        }else{
+          let ids = "";
+          let that = this;
+          that.selectedRowKeys.forEach(function(val) {
+            ids+=val+",";
+          });
+          that.$confirm({
+            title:"确认删除",
+            content:"是否删除选中数据?",
+            onOk: function(){
+              that.handleDeleteNode(ids)
+              that.onClearSelected();
+            }
+          });
+        }
+      },
+      getSuperFieldList(){
+        <#include "/common/utils.ftl">
+        let fieldList=[];
+         <#list columns as po>
+        fieldList.push(${superQueryFieldList(po)})
+         </#list>
+        this.superFieldList = fieldList
       }
-
     }
   }
 </script>

@@ -37,7 +37,7 @@ public class SysUser implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ID_WORKER_STR)
+    @TableId(type = IdType.ASSIGN_ID)
     private String id;
 
     /**
@@ -129,6 +129,7 @@ public class SysUser implements Serializable {
      * 职务，关联职务表
      */
     @Excel(name = "职务", width = 15)
+    @Dict(dictTable ="sys_position",dicText = "name",dicCode = "code")
     private String post;
 
     /**
@@ -174,21 +175,11 @@ public class SysUser implements Serializable {
     @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
     private String departIds;
 
-
-    /**
-     * 第三方登录的唯一标识
-     */
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String thirdId;
-
-    /**
-     * 第三方类型 <br>
-     * （github/github，wechat_enterprise/企业微信，dingtalk/钉钉）
-     */
-    private String thirdType;
-
     /**
      * 多租户id配置，编辑用户的时候设置
      */
     private String relTenantIds;
+
+    /**设备id uniapp推送用*/
+    private String clientId;
 }

@@ -126,6 +126,8 @@ function  generateChildRouters (data) {
       componentPath = onlineCommons.OnlCgformTreeList
     }else if(item.component=="modules/online/cgform/auto/erp/OnlCgformErpList"){
       componentPath = onlineCommons.OnlCgformErpList
+    }else if(item.component=="modules/online/cgform/auto/tab/OnlCgformTabList"){
+      componentPath = onlineCommons.OnlCgformTabList
     }else if(item.component=="modules/online/cgform/auto/innerTable/OnlCgformInnerTableList"){
       componentPath = onlineCommons.OnlCgformInnerTableList
     }else if(item.component=="modules/online/cgreport/OnlCgreportHeadList"){
@@ -136,12 +138,12 @@ function  generateChildRouters (data) {
       componentPath = resolve => require(['@/' + component+'.vue'], resolve)
     }
 
-
     let menu =  {
       path: item.path,
       name: item.name,
       redirect:item.redirect,
       component: componentPath,
+      //component: resolve => require(['@/' + component+'.vue'], resolve),
       hidden:item.hidden,
       //component:()=> import(`@/views/${item.component}.vue`),
       meta: {
@@ -151,8 +153,9 @@ function  generateChildRouters (data) {
         permissionList:item.meta.permissionList,
         keepAlive:item.meta.keepAlive,
         /*update_begin author:wuxianquan date:20190908 for:赋值 */
-        internalOrExternal:item.meta.internalOrExternal
+        internalOrExternal:item.meta.internalOrExternal,
         /*update_end author:wuxianquan date:20190908 for:赋值 */
+        componentName:item.meta.componentName
       }
     }
     if(item.alwaysShow){
@@ -458,7 +461,7 @@ export function simpleDebounce(fn, delay = 100) {
       clearTimeout(timer)
     }
     timer = setTimeout(() => {
-      fn.apply(null, args)
+      fn.apply(this, args)
     }, delay)
   }
 }
@@ -527,4 +530,34 @@ export function getVmParentByName(vm, name) {
     }
   }
   return null
+}
+
+/**
+ * 使一个值永远不会为（null | undefined）
+ *
+ * @param value 要处理的值
+ * @param def 默认值，如果value为（null | undefined）则返回的默认值，可不传，默认为''
+ */
+export function neverNull(value, def) {
+  return value == null ? (neverNull(def, '')) : value
+}
+
+/**
+ * 根据元素值移除数组中的一个元素
+ * @param array 数组
+ * @param prod 属性名
+ * @param value 属性值
+ * @returns {string}
+ */
+export function removeArrayElement(array, prod, value) {
+  let index = -1
+  for(let i = 0;i<array.length;i++){
+    if(array[i][prod] == value){
+      index = i;
+      break;
+    }
+  }
+  if(index>=0){
+    array.splice(index, 1);
+  }
 }
